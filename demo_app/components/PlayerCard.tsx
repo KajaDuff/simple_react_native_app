@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { StyleSheet, Button, Text, View } from "react-native";
+import { StyleSheet, Button, Text, View, Image } from "react-native";
 import { actions, useAppDispatch } from "@/redux";
 import { IPlayer } from "@/types";
 
@@ -14,15 +14,19 @@ export const PlayerCard = ({ data }: { data: IPlayer }) => {
     ? { borderColor: data.team.color }
     : { borderColor: "lightgray", borderStyle: "dashed" as "dashed" };
 
+  const photoUri = data?.photo ?? null;
   return (
     <View key={data.id} style={[border, styles.card]}>
       <View style={styles.infoContainer}>
-        <Text style={styles.playerName}>Jméno: {data.name}</Text>
-        <Text style={styles.teamName}>
-          Tým: {data.team?.name || "Bez týmu"}
-        </Text>
+        <Text style={styles.playerName}>{data.name}</Text>
+        <Text style={styles.teamName}>{data.team?.name || "Bez týmu"}</Text>
       </View>
       <View style={styles.buttonsContainer}>
+        {photoUri && (
+          <View style={styles.photoContainer}>
+            <Image source={{ uri: photoUri }} style={styles.photo} />
+          </View>
+        )}
         <View style={styles.button}>
           <Button title="Smazat" onPress={handleDelete} />
         </View>
@@ -50,6 +54,7 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flex: 1,
+    gap: 4,
   },
   playerName: {
     fontSize: 16,
@@ -67,5 +72,18 @@ const styles = StyleSheet.create({
   button: {
     marginVertical: 4,
     width: "100%",
+  },
+  photoContainer: {
+    marginTop: 16,
+    alignItems: "center",
+  },
+  photoLabel: {
+    marginBottom: 8,
+    fontSize: 16,
+  },
+  photo: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
   },
 });

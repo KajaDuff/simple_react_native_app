@@ -8,5 +8,5 @@ export interface IPlayer {
   id: number;
   name: string;
   team?: ITeam;
-  photo: unknown; // TODO:
+  photo: string | null;
 }
