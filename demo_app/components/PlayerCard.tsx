@@ -1,10 +1,35 @@
 import React, { useCallback } from "react";
-import { StyleSheet, Button, Text, View, Image } from "react-native";
+import { StyleSheet, Button, Text, View, Image, Pressable } from "react-native";
 import { actions, useAppDispatch } from "@/redux";
 import { IPlayer } from "@/types";
 
-export const PlayerCard = ({ data }: { data: IPlayer }) => {
+type PayerCardProps = {
+  data: IPlayer;
+  selectedPlayers: number[];
+  setSelectedPlayers: React.Dispatch<React.SetStateAction<number[]>>;
+  disabled: boolean;
+};
+
+export const PlayerCard = ({
+  data,
+  selectedPlayers,
+  setSelectedPlayers,
+  disabled,
+}: PayerCardProps) => {
   const dispatch = useAppDispatch();
+
+  const isSelected =
+    (selectedPlayers && selectedPlayers.includes(data.id)) ?? false;
+
+  const handleSelectPlayer = useCallback(() => {
+    if (isSelected) {
+      // If the player is already selected, remove from selectedPlayers
+      setSelectedPlayers(selectedPlayers.filter((id) => id !== data.id));
+    } else {
+      // If the player is not selected, add to selectedPlayers
+      setSelectedPlayers([...selectedPlayers, data.id]);
+    }
+  }, [data.id, isSelected, selectedPlayers, setSelectedPlayers]);
 
   const handleDelete = useCallback(() => {
     dispatch(actions.players.removePlayerData({ id: data.id }));
@@ -16,7 +41,16 @@ export const PlayerCard = ({ data }: { data: IPlayer }) => {
 
   const photoUri = data?.photo ?? null;
   return (
-    <View key={data.id} style={[border, styles.card]}>
+    <Pressable
+      key={data.id}
+      style={[
+        border,
+        styles.card,
+        isSelected && { backgroundColor: border.borderColor },
+      ]}
+      onPress={handleSelectPlayer}
+      disabled={disabled}
+    >
       <View style={styles.infoContainer}>
         <Text style={styles.playerName}>{data.name}</Text>
         <Text style={styles.teamName}>{data.team?.name || "Bez týmu"}</Text>
@@ -31,7 +65,7 @@ export const PlayerCard = ({ data }: { data: IPlayer }) => {
           <Button title="Smazat" onPress={handleDelete} />
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 };
 

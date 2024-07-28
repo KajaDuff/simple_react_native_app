@@ -1,4 +1,4 @@
-import { IPlayer } from "@/types";
+import { IPlayer, ITeam } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type PlayerReducerState = {
@@ -26,6 +26,16 @@ export const playersSlice = createSlice({
       state.playersData = state.playersData.filter(
         (player) => player.id !== action.payload.id
       );
+    },
+    addPlayersTeam: (
+      state: PlayerReducerState,
+      action: PayloadAction<{ playerId: number; team: ITeam }>
+    ) => {
+      const { playerId, team } = action.payload;
+      const player = state.playersData.find((player) => player.id === playerId);
+      if (player) {
+        player.team = team;
+      }
     },
   },
 });

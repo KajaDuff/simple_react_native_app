@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { StyleSheet, View, Button, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
-import { RootState, useAppSelector } from "@/redux";
+import { actions, RootState, useAppDispatch, useAppSelector } from "@/redux";
 import { AddTeamModal } from "@/components/AddTeamModal";
 import { AddPlayerModal } from "@/components/AddPlayerModal";
 import { TeamCard } from "@/components/TeamCard";
 import { PlayerCard } from "@/components/PlayerCard";
+import { ITeam } from "@/types";
 
-export default function HomeScreen() {
+const HomeScreen: React.FC = () => {
+  const dispatch = useAppDispatch();
   const teamsData = useAppSelector((state: RootState) => state.teams.teamsData);
   const playersData = useAppSelector(
     (state: RootState) => state.players.playersData
@@ -16,6 +18,29 @@ export default function HomeScreen() {
 
   const [addTeamOpen, setAddTeamOpen] = useState<boolean>(false);
   const [addPlayerOpen, setAddPlayerOpen] = useState<boolean>(false);
+  const [selectedTeam, setSelectedTeam] = useState<ITeam | undefined>();
+  const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
+  const [selectionDisabled, setSelectionDisabled] = useState<boolean>(true);
+
+  const handleAllowSelection = useCallback(() => {
+    setSelectionDisabled(false);
+  }, []);
+
+  const handleCancelSelection = useCallback(() => {
+    setSelectionDisabled(true);
+    setSelectedTeam(undefined);
+    setSelectedPlayers([]);
+  }, []);
+
+  const handleTeamMembership = useCallback(() => {
+    if (!selectedTeam) return;
+    selectedPlayers.forEach((playerId) => {
+      dispatch(
+        actions.players.addPlayersTeam({ playerId, team: selectedTeam })
+      );
+    });
+    handleCancelSelection(); // Reset state after saving
+  }, [selectedPlayers, selectedTeam, dispatch, handleCancelSelection]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -24,14 +49,26 @@ export default function HomeScreen() {
           <View style={styles.column}>
             <Text style={styles.title}>Týmy</Text>
             {teamsData.map((team) => (
-              <TeamCard data={team} key={team.id} />
+              <TeamCard
+                key={team.id}
+                data={team}
+                setSelectedTeam={setSelectedTeam}
+                selectedTeam={selectedTeam}
+                disabled={selectionDisabled}
+              />
             ))}
             <Button title="Přidat tým" onPress={() => setAddTeamOpen(true)} />
           </View>
           <View style={styles.column}>
             <Text style={styles.title}>Hráči</Text>
             {playersData.map((player) => (
-              <PlayerCard data={player} key={player.id} />
+              <PlayerCard
+                key={player.id}
+                data={player}
+                selectedPlayers={selectedPlayers}
+                setSelectedPlayers={setSelectedPlayers}
+                disabled={selectionDisabled || !selectedTeam}
+              />
             ))}
             <Button
               title="Přidat hráče"
@@ -41,7 +78,15 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
       <View style={styles.assignButtonContainer}>
-        <Button title="Přidřadit hráče k týmu" />
+        {selectionDisabled ? (
+          <Button
+            title="Přidřadit hráče k týmu"
+            onPress={handleAllowSelection}
+          />
+        ) : (
+          <Button title="Zrušit" onPress={handleCancelSelection} />
+        )}
+        <Button title="Uložit" onPress={handleTeamMembership} />
       </View>
       <AddTeamModal
         modalVisible={addTeamOpen}
@@ -53,7 +98,7 @@ export default function HomeScreen() {
       />
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -85,6 +130,10 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 0,
     right: 0,
-    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
   },
 });
+
+export default HomeScreen;

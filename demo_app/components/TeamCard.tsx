@@ -1,17 +1,44 @@
 import React, { useCallback } from "react";
-import { StyleSheet, Button, Text, View } from "react-native";
+import { StyleSheet, Button, Text, View, Pressable } from "react-native";
 import { actions, useAppDispatch } from "@/redux";
 import { ITeam } from "@/types";
 
-export const TeamCard = ({ data }: { data: ITeam }) => {
+type TeamCardProps = {
+  data: ITeam;
+  selectedTeam: ITeam | undefined;
+  setSelectedTeam: React.Dispatch<React.SetStateAction<ITeam | undefined>>;
+  disabled: boolean;
+};
+
+export const TeamCard = ({
+  data,
+  selectedTeam,
+  setSelectedTeam,
+  disabled,
+}: TeamCardProps) => {
   const dispatch = useAppDispatch();
 
   const handleDelete = useCallback(() => {
     dispatch(actions.teams.removeTeamData({ id: data.id }));
   }, [dispatch, data.id]);
 
+  const handleSelectTeam = useCallback(() => {
+    setSelectedTeam(data);
+  }, [data.id, setSelectedTeam]);
+
+  const isSelected = (selectedTeam && selectedTeam.id === data.id) ?? false;
+
   return (
-    <View key={data.id} style={[{ borderColor: data.color }, styles.teamCard]}>
+    <Pressable
+      key={data.id}
+      style={[
+        { borderColor: data.color },
+        styles.teamCard,
+        isSelected && { backgroundColor: data.color },
+      ]}
+      onPress={handleSelectTeam}
+      disabled={disabled}
+    >
       <View style={styles.infoContainer}>
         <Text style={styles.teamName}>{data.name}</Text>
       </View>
@@ -23,7 +50,7 @@ export const TeamCard = ({ data }: { data: ITeam }) => {
           <Button title="Smazat" onPress={handleDelete} />
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 };
 
