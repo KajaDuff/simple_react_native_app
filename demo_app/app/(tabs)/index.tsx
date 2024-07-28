@@ -7,17 +7,22 @@ import { AddTeamModal } from "@/components/AddTeamModal";
 import { AddPlayerModal } from "@/components/AddPlayerModal";
 import { TeamCard } from "@/components/TeamCard";
 import { PlayerCard } from "@/components/PlayerCard";
-import { ITeam } from "@/types";
+import { IPlayer, ITeam } from "@/types";
+import { TeamInfoModal } from "@/components/TeamInfoModal";
 
 const HomeScreen: React.FC = () => {
   const dispatch = useAppDispatch();
-  const teamsData = useAppSelector((state: RootState) => state.teams.teamsData);
-  const playersData = useAppSelector(
+  const teamsData: ITeam[] = useAppSelector(
+    (state: RootState) => state.teams.teamsData
+  );
+  const playersData: IPlayer[] = useAppSelector(
     (state: RootState) => state.players.playersData
   );
 
   const [addTeamOpen, setAddTeamOpen] = useState<boolean>(false);
   const [addPlayerOpen, setAddPlayerOpen] = useState<boolean>(false);
+  const [teamInfoOpen, setTeamInfoOpen] = useState<boolean>(false);
+
   const [selectedTeam, setSelectedTeam] = useState<ITeam | undefined>();
   const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
   const [selectionDisabled, setSelectionDisabled] = useState<boolean>(true);
@@ -39,8 +44,10 @@ const HomeScreen: React.FC = () => {
         actions.players.addPlayersTeam({ playerId, team: selectedTeam })
       );
     });
-    handleCancelSelection(); // Reset state after saving
+    setTeamInfoOpen(true);
   }, [selectedPlayers, selectedTeam, dispatch, handleCancelSelection]);
+
+  const hadnleShowTeamData = useCallback(() => {}, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -96,6 +103,14 @@ const HomeScreen: React.FC = () => {
         modalVisible={addPlayerOpen}
         setModalVisible={setAddPlayerOpen}
       />
+      {selectedTeam && (
+        <TeamInfoModal
+          modalVisible={teamInfoOpen}
+          setModalVisible={setTeamInfoOpen}
+          selectedTeam={selectedTeam}
+          handleClose={handleCancelSelection}
+        />
+      )}
     </SafeAreaView>
   );
 };

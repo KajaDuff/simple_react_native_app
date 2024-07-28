@@ -1,7 +1,8 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { StyleSheet, Button, Text, View, Pressable } from "react-native";
 import { actions, useAppDispatch } from "@/redux";
 import { ITeam } from "@/types";
+import { TeamInfoModal } from "./TeamInfoModal";
 
 type TeamCardProps = {
   data: ITeam;
@@ -17,6 +18,7 @@ export const TeamCard = ({
   disabled,
 }: TeamCardProps) => {
   const dispatch = useAppDispatch();
+  const [teamInfoOpen, setTeamInfoOpen] = useState<boolean>(false);
 
   const handleDelete = useCallback(() => {
     dispatch(actions.teams.removeTeamData({ id: data.id }));
@@ -44,12 +46,18 @@ export const TeamCard = ({
       </View>
       <View style={styles.buttonsContainer}>
         <View style={styles.button}>
-          <Button title="Zobrazit" onPress={() => {}} />
+          <Button title="Zobrazit" onPress={() => setTeamInfoOpen(true)} />
         </View>
         <View style={styles.button}>
           <Button title="Smazat" onPress={handleDelete} />
         </View>
       </View>
+      <TeamInfoModal
+        modalVisible={teamInfoOpen}
+        setModalVisible={setTeamInfoOpen}
+        selectedTeam={data}
+        handleClose={() => setTeamInfoOpen(false)}
+      />
     </Pressable>
   );
 };
