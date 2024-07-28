@@ -1,74 +1,89 @@
-import { Image, StyleSheet, Platform } from "react-native";
-
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import React, { useState } from "react";
+import { StyleSheet, View, Button, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView } from "react-native-gesture-handler";
+import { RootState, useAppSelector } from "@/redux";
+import { AddTeamModal } from "@/components/AddTeamModal";
+import { AddPlayerModal } from "@/components/AddPlayerModal";
+import { TeamCard } from "@/components/TeamCard";
+import { PlayerCard } from "@/components/PlayerCard";
 
 export default function HomeScreen() {
+  const teamsData = useAppSelector((state: RootState) => state.teams.teamsData);
+  const playersData = useAppSelector(
+    (state: RootState) => state.players.playersData
+  );
+
+  const [addTeamOpen, setAddTeamOpen] = useState<boolean>(false);
+  const [addPlayerOpen, setAddPlayerOpen] = useState<boolean>(false);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: "cmd + d", android: "cmd + m" })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this
-          starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{" "}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText>{" "}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-          directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.contentContainer}>
+          <View style={styles.column}>
+            <Text style={styles.title}>Týmy</Text>
+            {teamsData.map((team) => (
+              <TeamCard data={team} key={team.id} />
+            ))}
+            <Button title="Přidat tým" onPress={() => setAddTeamOpen(true)} />
+          </View>
+          <View style={styles.column}>
+            <Text style={styles.title}>Hráči</Text>
+            {playersData.map((player) => (
+              <PlayerCard data={player} key={player.id} />
+            ))}
+            <Button
+              title="Přidat hráče"
+              onPress={() => setAddPlayerOpen(true)}
+            />
+          </View>
+        </View>
+      </ScrollView>
+      <View style={styles.assignButtonContainer}>
+        <Button title="Přidřadit hráče k týmu" />
+      </View>
+      <AddTeamModal
+        modalVisible={addTeamOpen}
+        setModalVisible={setAddTeamOpen}
+      />
+      <AddPlayerModal
+        modalVisible={addPlayerOpen}
+        setModalVisible={setAddPlayerOpen}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  safeArea: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingHorizontal: 16,
+  },
+  contentContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 16,
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
+  column: {
+    flex: 1,
+    marginHorizontal: 8,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  assignButtonContainer: {
     position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: "center",
   },
 });
